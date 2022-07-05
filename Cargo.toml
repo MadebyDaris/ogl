@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 glium = "*"
 wfobj = { git = "https://github.com/nidirene/wfobj.git" }
+image = "*"

@@ -1,11 +1,14 @@
 use std::{fs::File, io::Read};
+use std::io::*;
 
+use glium::texture::SrgbTexture2d;
 use glium::{implement_vertex, vertex::VertexBufferAny, VertexBuffer, Display, Program};
+use image::{ImageBuffer, Rgba};
 use wfobj::*;
 
 #[derive(Clone, Copy)]
-pub struct Vertex { position: [f32; 3], normal: [f32; 3] } 
-implement_vertex!(Vertex, position, normal);
+pub struct Vertex { position: [f32; 3], normal: [f32; 3], tex_coords: [f32; 2]} 
+implement_vertex!(Vertex, position, normal, tex_coords);
 
 pub struct Entity { 
     pub vert_buffer: VertexBufferAny,
@@ -22,16 +25,30 @@ impl Entity {
         for f in wrld.faces {
             for v in f {
                 let position = Entity::a4_2_a3(wrld.vertices[(v[0] as usize) - 1]);
-                let normal =  wrld.normals[(v[2] as usize) - 1];
-                
+                let normal = wrld.normals[(v[2] as usize) - 1];
+                let tex_coords = wrld.textures[(v[1] as usize) - 1];
+                let mut t_coords_2d = [0.;2];
+                for i in 0..1 {
+                    t_coords_2d[i] = tex_coords[i]};
+
                 vertex_data.push(Vertex {
                     position,
-                    normal
+                    normal,
+                    tex_coords: t_coords_2d
                 })
             }
         }
         let vert_buffer = VertexBuffer::new(screen, &vertex_data).unwrap().into();
         return Entity { vert_buffer, program: Entity::compile_program(screen, vertex_shader, fragment_shader) }
+    }
+
+    pub fn tex(display: &Display, path: &str) -> SrgbTexture2d {
+        let image = image::load(BufReader::new(File::open(path).unwrap()),
+                        image::ImageFormat::Jpeg).unwrap().to_rgba8();
+        let image_dimensions = image.dimensions();
+        let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
+        let texture = glium::texture::SrgbTexture2d::new(display, image).unwrap();
+        return texture;
     }
 
     pub fn compile_program(screen: &Display, vertex_shader: &str, fragment_shader: &str) -> Program {
