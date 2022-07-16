@@ -1,8 +1,11 @@
 use glium::{glutin::{self, event::{DeviceEvent}}, Display};
 use std::f32::consts::PI as pi;
 
+pub struct camera_mat{ 
+    pub view_mat: [[f32;4];4],
+    pub pers_mat: [[f32;4];4],
+}
 
-#[path = "./matrix_transform.rs"] pub mod matrix;
 pub struct Camera {
     aspect_ratio: f32,
     translation_sensitivity: f32,
@@ -60,7 +63,7 @@ impl Camera {
         let len = a.0*a.0 + a.1*a.1 + a.2*a.2; let len = len.sqrt();
         return (a.0 / len,  a.1 / len,  a.2 / len)}
     pub fn get_perspective(&mut self) -> [[f32;4];4] {
-        let fov: f32 = pi / 6.0;
+        let fov: f32 = pi / 3.0;
         let zfar = 1024.0;
         let znear = 0.1;
         let f = 1.0 / (fov / 2.0).tan();

@@ -1,26 +1,26 @@
 #[derive(Copy, Clone)]
-pub struct AffineMatrix {
+pub struct ModelMat {
     pub matrix: [[f32;4]; 4]
 }
-impl AffineMatrix {
+impl ModelMat {
     pub fn new() -> Self {
         Self{ matrix:[[1.0, 0.0, 0.0, 0.0],[0.0, 1.0, 0.0, 0.0],[0.0, 0.0, 1.0, 0.0],[0.0, 0.0, 0.0, 1.0]] }
     }
 
-    fn mat_mul(m_: AffineMatrix, m: AffineMatrix) -> [[f32;4];4] {
+    fn mat_x_mat(m_: ModelMat, m: ModelMat) -> ModelMat {
         let m1 = m_.matrix;
         let m2 = m.matrix;
-        let mut f = AffineMatrix::new().matrix;
+        let mut f = ModelMat::new().matrix;
 
         for i in 0..3 {
             for j in 0..3 {
                 f[i][j] = m1[i][j] * m2[j][i]
             }
         }
-        return f;
+        return ModelMat { matrix : f };
     }
 
-    pub fn vec_mat_mul(m: AffineMatrix, v: [f32;4]) -> [f32;4]{
+    pub fn vec_x_mat(m: ModelMat, v: [f32;4]) -> [f32;4]{
         let mat = m.matrix;
         let mut z = [0.;4];
         for i in 0..3{
@@ -32,47 +32,49 @@ impl AffineMatrix {
         return z;
     }
 
-    pub fn translate(self, kx: f32, ky: f32) -> [[f32;4];4] {
-        let mut mat = self.matrix;
-        mat[0][3] += kx;
-        mat[1][3] += ky;
+    pub fn translate(&mut self, kx: f32, ky: f32, kz: f32) -> [f32;3] {
+        let mut mat = [0.;3];
+        mat[0] = kx;
+        mat[1] = ky;
+        mat[2] = kz;
         return mat;
     }
     
-    pub fn scale(self, kx: f32, ky: f32, kz:f32) -> [[f32;4];4] {
+    pub fn scale(&mut self, kx: f32, ky: f32, kz:f32) -> ModelMat {
         let mut mat = self.matrix;
         mat[0][0] *= kx;
         mat[1][1] *= ky;
         mat[2][2] *= kz;
-        return mat;
+        return ModelMat{ matrix : mat };
     }
 
-    pub fn rotate(rot_param: (f32, f32, f32)) ->  [[f32;4];4] {
-        let mut mat = AffineMatrix::new();
-// X AXIS ROTATION
-        let mut x_rot = AffineMatrix::new().matrix;
+    pub fn rotate(&mut self, rot_param: (f32, f32, f32)) ->  ModelMat {
+        let mut mat = ModelMat::new();
+
+        let mut x_rot = ModelMat::new().matrix;
         x_rot[0][0] = 1.;
         x_rot[1][1] = rot_param.0.cos();
         x_rot[1][2] = -(rot_param.0.sin());
         x_rot[2][1] = (rot_param.0.sin());
         x_rot[2][2] = (rot_param.0.cos());
 
-        let mut y_rot = AffineMatrix::new().matrix;
+        let mut y_rot = ModelMat::new().matrix;
         y_rot[0][0] = rot_param.1.cos();
         y_rot[0][2] = -(rot_param.1.sin());
         y_rot[1][1] = 1.;
         y_rot[2][0] = (rot_param.1.sin());
         y_rot[2][2] = (rot_param.1.cos());
 
-        let mut z_rot = AffineMatrix::new().matrix;
+        let mut z_rot = ModelMat::new().matrix;
         z_rot[0][0] = rot_param.2.cos();
         z_rot[0][1] = -(rot_param.2.sin());
         z_rot[1][0] = (rot_param.2.sin());
         z_rot[1][1] = (rot_param.2.cos());
         z_rot[2][2] = 1.;
 
-        let x_y_rot = AffineMatrix::mat_mul(AffineMatrix{matrix: x_rot}, AffineMatrix{matrix:y_rot});
-        let f = AffineMatrix::mat_mul(AffineMatrix {matrix: x_y_rot}, AffineMatrix {matrix:z_rot} );
-        return f
+        let x_y_rot = ModelMat::mat_x_mat(ModelMat{matrix: x_rot}, ModelMat{ matrix: y_rot });
+        let f = ModelMat::mat_x_mat(ModelMat { matrix: x_y_rot.matrix }, ModelMat { matrix:z_rot } );
+        let z = ModelMat::mat_x_mat( *self, f );
+        return z
     }
 }
