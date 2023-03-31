@@ -7,5 +7,9 @@ edition = "2021"
 
 [dependencies]
 glium = "*"
-wfobj = { git = "https://github.com/nidirene/wfobj.git" }
+# wfobj = { git = "https://github.com/nidirene/wfobj.git" }
+wfobj = {path = "../wfobj"}
 image = "*"
+noise = "*"
+rand = "*"
+gltf = "1.0"

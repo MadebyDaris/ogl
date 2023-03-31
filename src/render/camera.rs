@@ -1,7 +1,7 @@
 use glium::{glutin::{self, event::{DeviceEvent}}, Display};
 use std::f32::consts::PI as pi;
-
-pub struct camera_mat{ 
+use crate::{utils::*};
+pub struct CameraMat{ 
     pub view_mat: [[f32;4];4],
     pub pers_mat: [[f32;4];4],
 }
@@ -57,11 +57,6 @@ impl Camera {
         }
     }
 
-    pub fn cross(a: (f32,f32,f32), b: (f32,f32,f32)) -> (f32,f32,f32) {
-        return (a.1*b.2 - a.2*b.1, a.2*b.0 - a.0*b.2, a.0*b.1 - a.1*b.0)}
-    pub fn normalize(a: (f32,f32,f32)) -> (f32,f32,f32) {
-        let len = a.0*a.0 + a.1*a.1 + a.2*a.2; let len = len.sqrt();
-        return (a.0 / len,  a.1 / len,  a.2 / len)}
     pub fn get_perspective(&mut self) -> [[f32;4];4] {
         let fov: f32 = pi / 3.0;
         let zfar = 1024.0;
@@ -82,10 +77,10 @@ impl Camera {
         // 0 -1  0  | z' = -y | re-align them
 
     pub fn view_matrix(&mut self) -> [[f32;4];4] {
-        let f = Camera::normalize(self.direction); // X axis
-        let s = Camera::cross(f, self.up); 
-        let s_norm = Camera::normalize(s); // Z axis
-        let u = Camera::cross(f,s_norm); // y axis relative to camera
+        let f = normalize(self.direction); // X axis
+        let s = cross(f, self.up); 
+        let s_norm = normalize(s); // Z axis
+        let u = cross(f,s_norm); // y axis relative to camera
 
         let p = (
             -self.position.0 * s.0 - self.position.1 * s.1 - self.position.2 * s.2,
@@ -128,15 +123,15 @@ impl Camera {
 //  User Input
 // 
     pub fn update(&mut self) {
-        let f = Camera::normalize(self.direction);
+        let f = normalize(self.direction);
 
         let up = (0.0, 1.0, 0.0);
 
-        let mut s = Camera::cross(f, up);
+        let mut s = cross(f, up);
 
-        s = Camera::normalize(s);
+        s = normalize(s);
 
-        let u = Camera::cross(s, f);
+        let u = cross(s, f);
 
         if self.moving_up {
             self.position.0 += u.0 * self.translation_sensitivity;

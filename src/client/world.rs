@@ -1,18 +1,20 @@
 use super::super::utils::app::*;
 use super::super::render::*;
-use glium::{glutin::{*, self}, uniforms, Surface, uniform, Display};
+use crate::{utils::{app::App as app}, object::*};
+
+use glium::{glutin::{*, self}, Surface, uniform};
 pub struct World {
-    Meshes: Vec<Mesh>,
-    Camera: Camera,
+    children: Vec<RigidBody>,
+    camera: Camera,
     u_light: (f32, f32, f32)
 }
 impl World {
-    pub fn new( Meshes: Vec<Mesh>,
-        Camera: Camera, u_light: (f32, f32, f32)) -> Self {
-            World { Meshes, Camera, u_light}
+    pub fn new( children: Vec<RigidBody>,
+        camera: Camera, u_light: (f32, f32, f32)) -> Self {
+            World { children, camera, u_light}
     }
 
-    pub fn render(&mut self, screen: &glium::Display, cam: &camera::camera_mat, u_light: (f32, f32, f32)) {
+    pub fn render(&mut self, screen: &glium::Display, cam: &camera::CameraMat, u_light: (f32, f32, f32)) {
         let mut target = screen.draw();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
         target.clear_color_and_depth((0.5, 0.4, 1.0, 1.0), 1.0);
@@ -24,38 +26,36 @@ impl World {
             },
             .. Default::default()
         };
-        for mesh_object in &self.Meshes {
+        for mesh_object in &self.children {
             let uni = uniform!{
-                mod_matrix: mesh_object.mesh_transform.matrix,
-                transform: mesh_object.translation_transform,
+                mod_matrix: mesh_object.mesh.mesh_transform.matrix,
+                transform: mesh_object.mesh.translation_transform,
                 view_matrix: cam.view_mat,
                 pers_mat: cam.pers_mat,
                 u_light: u_light,
-                tex: &mesh_object.texture
+                tex: &mesh_object.mesh.texture
             };
-            target.draw(&mesh_object.vert_buffer, &indices,&mesh_object.program, &uni, &params).unwrap();
+            target.draw(&mesh_object.mesh.vert_buffer, &indices,&mesh_object.mesh.program, &uni, &params).unwrap();
         }
         target.finish().unwrap();
     }
 }
-    
+
 pub fn process_input(mut world : World, el: event_loop::EventLoop<()>,  screen: glium::Display) {
-    app::update(el, move |events| {
-        world.Camera.update();
-
-        let camera_mat = camera_mat{ view_mat: world.Camera.view_matrix(), pers_mat: world.Camera.get_perspective() };
-
+    let camera_mat = CameraMat{ view_mat: world.camera.view_matrix(), pers_mat: world.camera.get_perspective() };
+        app::update(el, move |events| {
+        world.camera.update();
         world.render(&screen, &camera_mat, world.u_light);
         let mut action = Action::Continue;
 
         for event in events {
             match event {
                 glutin::event::Event::DeviceEvent { event, .. } => match event {
-                    ev => world.Camera.look_at(&ev)
+                    ev => world.camera.look_at(&ev)
                 },
                 glutin::event::Event::WindowEvent { event, .. } => match event {
                     glutin::event::WindowEvent::CloseRequested => action = Action::Stop,
-                    ev => world.Camera.input(&ev),
+                    ev => world.camera.input(&ev),
                 },
                 _ => (),
             }
