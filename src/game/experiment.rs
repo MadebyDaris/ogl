@@ -23,8 +23,6 @@ pub fn environment() {
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
     let mut children = vec![sphere, terrain];
     let w = world::World::new(children, _camera, u_li);
-
-    let gltf_test = RigidBody::load_gltf(model_matrix, t, &ap.screen ,"./data/gltf/player.gltf", sphere_shader);
     
     world::process_input(w, ap.event_loop, ap.screen);  
     // {

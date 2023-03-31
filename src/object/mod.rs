@@ -1,5 +1,9 @@
 pub mod MeshObject; pub use MeshObject::*;
 pub mod PhysicsObject; pub use PhysicsObject::*;
+
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use gltf;
 
 use glium::{VertexBuffer, Display};
@@ -8,7 +12,6 @@ use crate::utils::matrix::ModelMat;
 
 pub struct RigidBody {
     pub mesh: Mesh,
-    pub collision: Bounding
 }
 
 pub struct shader_data {
@@ -24,19 +27,20 @@ impl RigidBody {
     pub fn new(model_matrix: ModelMat, transform: [f32;3], screen: &Display, object_data: Vec<MeshObject::Vertex>, shader_data: shader_data) -> RigidBody {
         let (tex, vertex_s, fragment_s):(&str, &str, &str) = (shader_data.tex_filename.as_str(), shader_data.vertex_shader.as_str(), shader_data.fragment_shader.as_str());
         let tex = Mesh::texture(screen, &tex);
-        let collision = box_collision_object(&object_data);
+
         // Get Mesh of Object
             let vert_buffer = VertexBuffer::new(screen, &object_data).unwrap().into();
+
             let mesh =  Mesh { 
                 vert_buffer, 
                 program: Mesh::compile_program(screen, &vertex_s, &fragment_s),
                 mesh_transform: model_matrix,
                 texture: tex, 
                 translation_transform: transform,
-                data: object_data};
+                data: object_data
+            };
             return RigidBody {
                 mesh,
-                collision
                 }
             }
 
@@ -84,13 +88,12 @@ impl RigidBody {
                             position,
                             normal,
                             tex_coords,
-                        })
+                        });
                     }
                 }
-                
+
         // Get Mesh
             let vert_buffer = VertexBuffer::new(screen, &vertex_data).unwrap().into();
-            let collision = box_collision_object( &vertex_data);
             let mesh = Mesh { 
                 vert_buffer, 
                 program: Mesh::compile_program(screen, &vertex_s, &fragment_s),
@@ -100,14 +103,15 @@ impl RigidBody {
             };
         // Get Collision Object
         
-            return RigidBody {mesh, collision}
+            return RigidBody {mesh}
         }
 
-        pub fn get_collision(object_data: &Vec<MeshObject::Vertex>) -> PhysicsObject::PhysicsBody{
-            let collision = PhysicsBody::box_collision_object(&object_data);
+        pub fn get_collision(self) -> PhysicsObject::PhysicsBody{
+            let collision = PhysicsBody::box_collision_object(&self.mesh.data);
             return collision;
         }
     }
+    
     pub fn box_collision_object(mesh: &Vec<Vertex>) -> Bounding {
         let mut collision = Bounding { x : (0.0,0.0), y : (0.0,0.0), z : (0.0,0.0) };
         for i in mesh {
