@@ -3,11 +3,11 @@ in vec3 position;
 in vec3 normal;
 in vec2 tex_coords;
 
-
 uniform vec3 transform;
 uniform mat4 pers_mat;
 uniform mat4 mod_matrix;
 uniform mat4 view_matrix;
+
 out vec3 v_normal;
 out vec2 v_tex_coords;
 out vec3 f_pos;

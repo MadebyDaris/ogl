@@ -4,20 +4,24 @@ use crate::{utils::{app::App as app}, object::*};
 
 use glium::{glutin::{*, self}, Surface, uniform};
 pub struct World {
-    children: Vec<RigidBody>,
-    camera: Camera,
-    u_light: (f32, f32, f32)
+    pub children: Vec<RigidBody>,
+    pub camera: Camera,
+    pub u_light: (f32, f32, f32)
 }
 impl World {
-    pub fn new( children: Vec<RigidBody>,
+    pub fn new(children: Vec<RigidBody>,
         camera: Camera, u_light: (f32, f32, f32)) -> Self {
             World { children, camera, u_light}
+    }
+
+    pub fn update(&mut self, kids: Vec<RigidBody>) -> Self {
+        return World { children:kids, camera: self.camera, u_light: self.u_light}
     }
 
     pub fn render(&mut self, screen: &glium::Display, cam: &camera::CameraMat, u_light: (f32, f32, f32)) {
         let mut target = screen.draw();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
-        target.clear_color_and_depth((0.5, 0.4, 1.0, 1.0), 1.0);
+        target.clear_color_and_depth((0.2, 0.4, 1.0, 1.0), 1.0);
         let params = glium::DrawParameters {
             depth: glium::Depth {
                 test: glium::DepthTest::IfLess,
@@ -39,27 +43,4 @@ impl World {
         }
         target.finish().unwrap();
     }
-}
-
-pub fn process_input(mut world : World, el: event_loop::EventLoop<()>,  screen: glium::Display) {
-    let camera_mat = CameraMat{ view_mat: world.camera.view_matrix(), pers_mat: world.camera.get_perspective() };
-        app::update(el, move |events| {
-        world.camera.update();
-        world.render(&screen, &camera_mat, world.u_light);
-        let mut action = Action::Continue;
-
-        for event in events {
-            match event {
-                glutin::event::Event::DeviceEvent { event, .. } => match event {
-                    ev => world.camera.look_at(&ev)
-                },
-                glutin::event::Event::WindowEvent { event, .. } => match event {
-                    glutin::event::WindowEvent::CloseRequested => action = Action::Stop,
-                    ev => world.camera.input(&ev),
-                },
-                _ => (),
-            }
-        }
-        action
-    })
 }

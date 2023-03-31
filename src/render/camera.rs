@@ -5,7 +5,7 @@ pub struct CameraMat{
     pub view_mat: [[f32;4];4],
     pub pers_mat: [[f32;4];4],
 }
-
+#[derive(Clone, Copy)]
 pub struct Camera {
     aspect_ratio: f32,
     translation_sensitivity: f32,

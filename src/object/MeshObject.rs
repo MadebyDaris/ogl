@@ -5,8 +5,14 @@ use glium::{implement_vertex, vertex::VertexBufferAny, Display, Program};
 use crate::utils::matrix::ModelMat;
 
 #[derive(Clone, Copy)]
-pub struct Vertex { pub(crate) position: [f32; 3], pub(crate) normal: [f32; 3], pub(crate) tex_coords: [f32; 2]} 
+pub struct Vertex { pub(crate) position: [f32; 3], pub(crate) normal: [f32; 3], pub(crate) tex_coords: [f32; 2]}
+
 implement_vertex!(Vertex, position, normal, tex_coords);
+
+#[derive(Clone)]
+pub struct MeshData {
+    pub verts: Vec<Vertex> 
+}
 
 pub struct Mesh { 
     pub vert_buffer: VertexBufferAny,
@@ -14,7 +20,6 @@ pub struct Mesh {
     pub mesh_transform: ModelMat,
     pub texture: SrgbTexture2d,
     pub translation_transform: [f32;3],
-    pub data: Vec<Vertex>
 }
 
 impl Mesh {
