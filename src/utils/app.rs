@@ -8,18 +8,18 @@ pub enum Action {
     Continue,
 }
 
-pub struct app {
+pub struct App {
     pub screen: glium::Display,
     pub event_loop: EventLoop<()>
 }
 
-impl app {
+impl App {
     pub fn new() -> Self {
         let el = glutin::event_loop::EventLoop::new();
         let wb = glutin::window::WindowBuilder::new().with_resizable(true);
         let cb = glutin::ContextBuilder::new().with_vsync(true);
         let displ = glium::Display::new(wb, cb, &el).unwrap();
-        return { app { screen : displ, event_loop: el } }
+        return App { screen : displ, event_loop: el }
     }
 
     pub fn update<F>(event_loop: EventLoop<()>, mut callback: F) ->! where F: 'static + FnMut(&Vec<Event<'_, ()>>) -> Action {

@@ -12,5 +12,4 @@
         vec3 regular_color = vec3(1.0, 0.0, 0.0);
         // color = vec4(mix(dark_color, regular_color, brightness), 1.0);
         color = texture(tex, v_tex_coords);
-        
     }

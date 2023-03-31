@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "ogl",
+			"path": "."
+		},
+		{
+			"name": "wfobj",
+			"path": "..\\wfobj"
+		}
+	],
+	"settings": {}
+}

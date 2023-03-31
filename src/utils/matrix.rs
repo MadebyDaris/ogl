@@ -23,7 +23,7 @@ impl ModelMat {
     pub fn vec_x_mat(m: ModelMat, v: [f32;4]) -> [f32;4]{
         let mat = m.matrix;
         let mut z = [0.;4];
-        for i in 0..3{
+        for i in 0..3 {
             for j in 0..3{
                 let t = v[i] * mat[i][j];
                 z[i] += t
@@ -32,12 +32,16 @@ impl ModelMat {
         return z;
     }
 
-    pub fn translate(&mut self, kx: f32, ky: f32, kz: f32) -> [f32;3] {
+    pub fn translate(mut self, kx: f32, ky: f32, kz: f32) -> Self {
         let mut mat = [0.;3];
         mat[0] = kx;
         mat[1] = ky;
         mat[2] = kz;
-        return mat;
+
+        self.matrix[0][3] = kx;
+        self.matrix[1][3] = ky;
+        self.matrix[2][3] = kz;
+        return self;
     }
     
     pub fn scale(&mut self, kx: f32, ky: f32, kz:f32) -> ModelMat {
