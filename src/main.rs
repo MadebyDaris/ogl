@@ -1,15 +1,12 @@
 extern crate glium;
 
-use crate::{client::*, object::*, game::*};
+use crate::{game::*};
 
 mod game;
 mod render;
 mod utils;
-mod client;
 pub mod object; 
 
-use render::*;
-use utils::{matrix::ModelMat, app};
 fn main() {
     experiment::environment()
     // let ap = app::App::new();

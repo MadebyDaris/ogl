@@ -1,12 +1,8 @@
 pub mod MeshObject; pub use MeshObject::*;
 
-use glium::{VertexBuffer, Display};
+use glium::{VertexBuffer};
 use wfobj::*;
-use crate::utils::{self, matrix::ModelMat};
-
-pub struct RigidBody {
-    pub mesh: Mesh,
-}
+use crate::utils::{matrix::ModelMat};
 
 #[derive(Clone, Copy)]
 pub struct Bounding {  
@@ -14,36 +10,12 @@ pub struct Bounding {
     pub y: (f32, f32),
     pub z: (f32, f32)}
 
-pub struct shader_data {
+pub struct ShaderData {
     pub vertex_shader: String,
     pub fragment_shader: String,
-    pub tex_filename: String
-} 
-
-impl RigidBody {
-    pub fn rendering_data(vertex_shader: String, fragment_shader: String, tex_filename: String) -> shader_data {
-        return shader_data { vertex_shader, fragment_shader, tex_filename}
-    }
-    pub fn new(model_matrix: ModelMat, transform: [f32;3], screen: &Display, object_data: &Vec<MeshObject::Vertex>, shader_data: shader_data) -> RigidBody {
-        let (tex, vertex_s, fragment_s):(&str, &str, &str) = (shader_data.tex_filename.as_str(), shader_data.vertex_shader.as_str(), shader_data.fragment_shader.as_str());
-        let tex = Mesh::texture(screen, &tex);
-        // Get Mesh of Object
-            let vert_buffer = VertexBuffer::new(screen, object_data).unwrap().into();
-
-            let mesh =  Mesh { 
-                vert_buffer, 
-                program: Mesh::compile_program(screen, &vertex_s, &fragment_s),
-                mesh_transform: model_matrix,
-                texture: tex, 
-                translation_transform: transform,
-            };
-            return RigidBody {mesh}
-    }
+    pub tex_filename: String,
+    pub transform_data: ModelMat
 }
-
-// 
-// OBJ
-// 
 
 pub fn load_obj_file(filename: &str) -> MeshData {
     // PARSING THE FILE

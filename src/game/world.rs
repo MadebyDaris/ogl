@@ -1,24 +1,24 @@
 use super::super::utils::app::*;
 use super::super::render::*;
-use crate::{utils::{app::App as app}, object::*};
+use crate::{utils::{app::App as app}, object::{Mesh, MeshUniforms}};
 
 use glium::{glutin::{*, self}, Surface, uniform};
 pub struct World {
-    pub children: Vec<RigidBody>,
+    pub children: Vec<Mesh>,
     pub camera: Camera,
     pub u_light: (f32, f32, f32)
 }
 impl World {
-    pub fn new(children: Vec<RigidBody>,
+    pub fn new(children: Vec<Mesh>,
         camera: Camera, u_light: (f32, f32, f32)) -> Self {
             World { children, camera, u_light}
     }
 
-    pub fn update(&mut self, kids: Vec<RigidBody>) -> Self {
+    pub fn update(&mut self, kids: Vec<Mesh>) -> Self {
         return World { children:kids, camera: self.camera, u_light: self.u_light}
     }
 
-    pub fn render(&mut self, screen: &glium::Display, cam: &camera::CameraMat, u_light: (f32, f32, f32)) {
+    pub fn render(&mut self, object_render_data: Vec<MeshUniforms>, screen: &glium::Display, cam: &camera::CameraMat, u_light: (f32, f32, f32)) {
         let mut target = screen.draw();
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
         target.clear_color_and_depth((0.2, 0.4, 1.0, 1.0), 1.0);
@@ -30,16 +30,19 @@ impl World {
             },
             .. Default::default()
         };
-        for mesh_object in &self.children {
+        for i in 0..self.children.len() {
+            let mesh_object = &self.children[i];
+            let mesh_uniform = object_render_data[i];
+
             let uni = uniform!{
-                mod_matrix: mesh_object.mesh.mesh_transform.matrix,
-                transform: mesh_object.mesh.translation_transform,
+                mod_matrix: mesh_uniform.mod_matrix,
+                transform: mesh_uniform.transform,
                 view_matrix: cam.view_mat,
                 pers_mat: cam.pers_mat,
-                u_light: u_light,
-                tex: &mesh_object.mesh.texture
+                u_light: mesh_uniform.u_light,
+                tex: &mesh_object.texture
             };
-            target.draw(&mesh_object.mesh.vert_buffer, &indices,&mesh_object.mesh.program, &uni, &params).unwrap();
+            target.draw(&mesh_object.vert_buffer, &indices, &mesh_object.program, &uni, &params).unwrap();
         }
         target.finish().unwrap();
     }
