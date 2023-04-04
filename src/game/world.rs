@@ -1,8 +1,7 @@
-use super::super::utils::app::*;
 use super::super::render::*;
-use crate::{utils::{app::App as app}, object::{Mesh, MeshUniforms}};
+use crate::{object::{Mesh, MeshUniforms}};
 
-use glium::{glutin::{*, self}, Surface, uniform};
+use glium::{Surface, uniform};
 pub struct World {
     pub children: Vec<Mesh>,
     pub camera: Camera,
@@ -12,10 +11,6 @@ impl World {
     pub fn new(children: Vec<Mesh>,
         camera: Camera, u_light: (f32, f32, f32)) -> Self {
             World { children, camera, u_light}
-    }
-
-    pub fn update(&mut self, kids: Vec<Mesh>) -> Self {
-        return World { children:kids, camera: self.camera, u_light: self.u_light}
     }
 
     pub fn render(&mut self, object_render_data: Vec<MeshUniforms>, screen: &glium::Display, cam: &camera::CameraMat, u_light: (f32, f32, f32)) {
@@ -39,7 +34,7 @@ impl World {
                 transform: mesh_uniform.transform,
                 view_matrix: cam.view_mat,
                 pers_mat: cam.pers_mat,
-                u_light: mesh_uniform.u_light,
+                u_light: u_light,
                 tex: &mesh_object.texture
             };
             target.draw(&mesh_object.vert_buffer, &indices, &mesh_object.program, &uni, &params).unwrap();

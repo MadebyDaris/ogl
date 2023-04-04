@@ -1,4 +1,4 @@
-pub mod MeshObject; pub use MeshObject::*;
+pub mod mesh_object; pub use mesh_object::*;
 
 use glium::{VertexBuffer};
 use wfobj::*;
@@ -22,12 +22,15 @@ pub fn load_obj_file(filename: &str) -> MeshData {
         let wrld = parse_file(filename).unwrap();
         let (v, n, t) = (wrld.vertices, wrld.normals, wrld.textures);
 
-        let mut vertex_data: Vec<MeshObject::Vertex> = Vec::new();
+        let mut vertex_data: Vec<mesh_object::Vertex> = Vec::new();
         for face in wrld.faces {
             for vert in face { let mut x: [f32;3] = [0.;3];
             
                 // POSITION
-                for i in 0..2 { let index_v = (vert[0] as usize) - 1; x[i] = v[index_v][i]; }
+                for i in 0..2 { 
+                    let index_v = (vert[0] as usize) - 1; 
+                    x[i] = v[index_v][i]; 
+                }
                 let position = a4_2_a3(v[vert[0] as usize - 1]);
 
                 // NORMALS
@@ -35,7 +38,9 @@ pub fn load_obj_file(filename: &str) -> MeshData {
 
                 // TEXTURES
                 let mut tex_coords = [0.;2];
-                for i in 0..1 { tex_coords[i] = t[(vert[1] as usize - 1)][i]};
+                for i in 0..1 { 
+                    tex_coords[i] = t[(vert[1] as usize - 1)][i];
+                }
 
                 vertex_data.push(Vertex {
                     position,

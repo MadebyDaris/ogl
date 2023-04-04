@@ -4,7 +4,7 @@ use glium::texture::SrgbTexture2d;
 use glium::{implement_vertex, vertex::VertexBufferAny, Display, Program};
 use crate::utils::matrix::ModelMat;
 
-use crate::{object::*, render::*};
+use crate::{object::*};
 
 #[derive(Clone, Copy)]
 pub struct Vertex { pub(crate) position: [f32; 3], pub(crate) normal: [f32; 3], pub(crate) tex_coords: [f32; 2]}
@@ -39,7 +39,7 @@ impl Mesh {
 
     // Using another function specified in "../mod.rs" we get the data from an obj this is to make the
     // process more broad 
-    pub fn new(transform: [f32;3], screen: &Display, object_data: &Vec<MeshObject::Vertex>, shader_data: ShaderData) -> Mesh {
+    pub fn new(transform: [f32;3], screen: &Display, object_data: &Vec<mesh_object::Vertex>, shader_data: ShaderData) -> Mesh {
         let (tex, vertex_s, fragment_s):(&str, &str, &str) = (shader_data.tex_filename.as_str(), shader_data.vertex_shader.as_str(), shader_data.fragment_shader.as_str());
         let tex = Mesh::texture(screen, &tex);
         // Get Mesh of Object
@@ -73,27 +73,6 @@ impl Mesh {
         let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
         let texture = glium::texture::SrgbTexture2d::new(display, image).unwrap();
         return texture;
-    }
-
-
-    // will use previously assigned shaders and use new Model Matrix assigned
-    // Corresponding to transformation data.
-    pub fn render(mut self, model_mat: ModelMat, u_light: (f32, f32, f32)) ->  MeshUniforms {
-        let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
-
-        let params = glium::DrawParameters {
-            depth: glium::Depth {
-                test: glium::DepthTest::IfLess,
-                write: true,
-                .. Default::default()
-            },
-                .. Default::default()};
-        let uni = MeshUniforms {
-            mod_matrix: model_mat.matrix,
-            transform: self.translation_transform,
-            u_light: u_light,
-        };
-        return uni;
     }
 }
 
