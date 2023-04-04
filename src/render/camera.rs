@@ -1,6 +1,7 @@
 use glium::{glutin::{self, event::{DeviceEvent}}, Display};
 use std::f32::consts::PI as pi;
 use crate::{utils::*};
+#[derive(Clone, Copy)]
 pub struct CameraMat{ 
     pub view_mat: [[f32;4];4],
     pub pers_mat: [[f32;4];4],

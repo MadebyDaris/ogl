@@ -1,12 +1,8 @@
-pub mod MeshObject; pub use MeshObject::*;
+pub mod mesh_object; pub use mesh_object::*;
 
-use glium::{VertexBuffer, Display};
+use glium::{VertexBuffer};
 use wfobj::*;
-use crate::utils::{self, matrix::ModelMat};
-
-pub struct RigidBody {
-    pub mesh: Mesh,
-}
+use crate::utils::{matrix::ModelMat};
 
 #[derive(Clone, Copy)]
 pub struct Bounding {  
@@ -14,48 +10,27 @@ pub struct Bounding {
     pub y: (f32, f32),
     pub z: (f32, f32)}
 
-pub struct shader_data {
+pub struct ShaderData {
     pub vertex_shader: String,
     pub fragment_shader: String,
-    pub tex_filename: String
-} 
-
-impl RigidBody {
-    pub fn rendering_data(vertex_shader: String, fragment_shader: String, tex_filename: String) -> shader_data {
-        return shader_data { vertex_shader, fragment_shader, tex_filename}
-    }
-    pub fn new(model_matrix: ModelMat, transform: [f32;3], screen: &Display, object_data: &Vec<MeshObject::Vertex>, shader_data: shader_data) -> RigidBody {
-        let (tex, vertex_s, fragment_s):(&str, &str, &str) = (shader_data.tex_filename.as_str(), shader_data.vertex_shader.as_str(), shader_data.fragment_shader.as_str());
-        let tex = Mesh::texture(screen, &tex);
-        // Get Mesh of Object
-            let vert_buffer = VertexBuffer::new(screen, object_data).unwrap().into();
-
-            let mesh =  Mesh { 
-                vert_buffer, 
-                program: Mesh::compile_program(screen, &vertex_s, &fragment_s),
-                mesh_transform: model_matrix,
-                texture: tex, 
-                translation_transform: transform,
-            };
-            return RigidBody {mesh}
-    }
+    pub tex_filename: String,
+    pub transform_data: ModelMat
 }
-
-// 
-// OBJ
-// 
 
 pub fn load_obj_file(filename: &str) -> MeshData {
     // PARSING THE FILE
         let wrld = parse_file(filename).unwrap();
         let (v, n, t) = (wrld.vertices, wrld.normals, wrld.textures);
 
-        let mut vertex_data: Vec<MeshObject::Vertex> = Vec::new();
+        let mut vertex_data: Vec<mesh_object::Vertex> = Vec::new();
         for face in wrld.faces {
             for vert in face { let mut x: [f32;3] = [0.;3];
             
                 // POSITION
-                for i in 0..2 { let index_v = (vert[0] as usize) - 1; x[i] = v[index_v][i]; }
+                for i in 0..2 { 
+                    let index_v = (vert[0] as usize) - 1; 
+                    x[i] = v[index_v][i]; 
+                }
                 let position = a4_2_a3(v[vert[0] as usize - 1]);
 
                 // NORMALS
@@ -63,7 +38,9 @@ pub fn load_obj_file(filename: &str) -> MeshData {
 
                 // TEXTURES
                 let mut tex_coords = [0.;2];
-                for i in 0..1 { tex_coords[i] = t[(vert[1] as usize - 1)][i]};
+                for i in 0..1 { 
+                    tex_coords[i] = t[(vert[1] as usize - 1)][i];
+                }
 
                 vertex_data.push(Vertex {
                     position,

@@ -53,27 +53,26 @@ impl ModelMat {
     }
 
     pub fn rotate(&mut self, rot_param: (f32, f32, f32)) ->  ModelMat {
-        let mut mat = ModelMat::new();
 
         let mut x_rot = ModelMat::new().matrix;
         x_rot[0][0] = 1.;
         x_rot[1][1] = rot_param.0.cos();
         x_rot[1][2] = -(rot_param.0.sin());
-        x_rot[2][1] = (rot_param.0.sin());
-        x_rot[2][2] = (rot_param.0.cos());
+        x_rot[2][1] = rot_param.0.sin();
+        x_rot[2][2] = rot_param.0.cos();
 
         let mut y_rot = ModelMat::new().matrix;
         y_rot[0][0] = rot_param.1.cos();
         y_rot[0][2] = -(rot_param.1.sin());
         y_rot[1][1] = 1.;
-        y_rot[2][0] = (rot_param.1.sin());
-        y_rot[2][2] = (rot_param.1.cos());
+        y_rot[2][0] = rot_param.1.sin();
+        y_rot[2][2] = rot_param.1.cos();
 
         let mut z_rot = ModelMat::new().matrix;
         z_rot[0][0] = rot_param.2.cos();
         z_rot[0][1] = -(rot_param.2.sin());
-        z_rot[1][0] = (rot_param.2.sin());
-        z_rot[1][1] = (rot_param.2.cos());
+        z_rot[1][0] = rot_param.2.sin();
+        z_rot[1][1] = rot_param.2.cos();
         z_rot[2][2] = 1.;
 
         let x_y_rot = ModelMat::mat_x_mat(ModelMat{matrix: x_rot}, ModelMat{ matrix: y_rot });

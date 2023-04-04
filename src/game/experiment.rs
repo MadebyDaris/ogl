@@ -1,48 +1,51 @@
+use std::vec;
+
 use crate::utils::matrix::ModelMat;
 use super::super::utils::app::*;
 use super::super::render::*;
-use crate::{utils::{app::App as app}, object::*, client::*};
-use glium::glutin::{self, event};
+use crate::{game::world, utils::{app::App as app}, object::*};
+use glium::{glutin::{self, event}};
 
 pub fn environment() {
     let app = App::new();
-    
+
+// TRANSFORM MATRIXES
     let mut model_matrix = ModelMat::new();
     let mut model_matrix_2 = ModelMat::new();
     model_matrix.scale(8.0, 8.0, 8.0);
-    model_matrix_2.scale(8.0, 8.0, 2.0);
+    model_matrix.translate(0.0, 0.0, -4.4);
+    model_matrix_2.scale(8.0, 1.0, 2.0);
 
-    
-    let mut translation = [1., 4., 3.];
+    let translation = [1., 1., 1.];
     let mut t = [1., 1., 1.];
     let u_li = (0.1, 0.1, 0.1);
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
     
-    // SPHERE
-    let mut sphere_data = load_obj_file("./data/obj/sphere.obj");
-    // let mut sphere_shaders = shader_data { tex_filename :  "./data/tex/tex.jpg".to_string(), vertex_shader : "data/glsl/vertex_shader.glsl".to_string(), fragment_shader : "data/glsl/fragment_shader.glsl".to_string()};
+// SPHERE
+    let sphere_data = load_obj_file("./data/obj/sphere.obj");
+    let sphere_shaders = ShaderData { transform_data: model_matrix, tex_filename :  "./data/tex/tex.jpg".to_string(), vertex_shader : "data/glsl/vertex_shader.glsl".to_string(), fragment_shader : "data/glsl/fragment_shader.glsl".to_string()};
+    let sphere = Mesh::new(translation , &app.screen , &sphere_data.verts , sphere_shaders);
     
-    // TERRAIN OBJECT
-    let mut terrain_data = load_obj_file("./data/obj/ground.obj");
-    // let mut terrain_shader = shader_data { tex_filename :  "./data/tex/tex.jpg".to_string(), vertex_shader : "data/glsl/vertex_shader.glsl".to_string(), fragment_shader : "data/glsl/fragment_shader.glsl".to_string()};
-    let mut sphere_shaders = shader_data { tex_filename :  "./data/tex/tex.jpg".to_string(), vertex_shader : "data/glsl/vertex_shader.glsl".to_string(), fragment_shader : "data/glsl/fragment_shader.glsl".to_string()};
-    let mut terrain_shader = shader_data { tex_filename :  "./data/tex/tex.jpg".to_string(), vertex_shader : "data/glsl/vertex_shader.glsl".to_string(), fragment_shader : "data/glsl/fragment_shader.glsl".to_string()};
+// TERRAIN OBJECT
+    let terrain_data = load_obj_file("./data/obj/ground.obj");
+    let terrain_shader = ShaderData { transform_data: model_matrix_2, tex_filename :  "./data/tex/tex.jpg".to_string(), vertex_shader : "data/glsl/vertex_shader.glsl".to_string(), fragment_shader : "data/glsl/fragment_shader.glsl".to_string()};
+    let terrain = Mesh::new(t , &app.screen , &terrain_data.verts , terrain_shader);
 
-    let mut sphere = RigidBody::new(model_matrix , translation , &app.screen , &sphere_data.verts , sphere_shaders);
-    let mut terrain = RigidBody::new(model_matrix_2 , t , &app.screen , &terrain_data.verts , terrain_shader);
 
-    
     let mut _camera = Camera::new(&app.screen);
-    let mut children = vec![sphere, terrain];
+    _camera.update();
+
+    let children:Vec<Mesh> = vec![sphere, terrain];
+
     let mut w = world::World::new(children, _camera, u_li);
 
     app::update(app.event_loop, move |events| {
 
-        let camera_mat = CameraMat{ view_mat: w.camera.view_matrix(), pers_mat: w.camera.get_perspective() };
-        w.camera.update();
+        let camera_mat = CameraMat{ view_mat: _camera.view_matrix(), pers_mat: _camera.get_perspective() };
+        _camera.update();
         
-        let gravity = 0.98;
-        
+        t[1] += 0.005;
+
+// COLISION DETECTION
         {
             let mut a = box_collision_object(&sphere_data.verts);
             a.x.0 += translation[0]; a.x.1 += translation[0];
@@ -57,26 +60,31 @@ pub fn environment() {
             if a.x.0 < b.x.1 { if a.x.1 > b.x.0{
                 if a.y.0 < b.y.1 { if a.y.1 > b.y.0{
                     if a.z.0 < b.z.1 { if a.z.1 > b.z.0{
-                        model_matrix.translate(0.0, 2.5, 0.0);
-                        a.y.0 += 2.5; a.y.1 += 2.5;
+                        t[1] -= 0.05;
+                        model_matrix.translate(0.0, -0.5, 0.0);
+                        a.y.0 -= 0.5; a.y.1 -= 0.5;
                         println!("intersecting");
                     }}
                 }}
             }}
         }
-                        
-        model_matrix.translate(0.0, 0.0, -gravity);
-                        
-        w.render(&app.screen, &camera_mat, w.u_light);
+                                        
+// RENDER
+        let sphere_uni = MeshUniforms { mod_matrix: model_matrix.matrix, transform: t, u_light : (1., 1., 1.) };
+        let terrain_uni = MeshUniforms { mod_matrix: model_matrix_2.matrix, transform: translation, u_light : (1., 1., 1.) };
+
+        let object_render_data = vec![sphere_uni, terrain_uni];
+
+        w.render(object_render_data, &app.screen, &camera_mat, (1., 1., 1.));
         let mut action = Action::Continue;
         for event in events {
             match event {
                 event::Event::DeviceEvent { event, .. } => match event {
-                    ev => w.camera.look_at(&ev)
+                    ev => _camera.look_at(&ev)
                 },
                 event::Event::WindowEvent { event, .. } => match event {
                     glutin::event::WindowEvent::CloseRequested => action = Action::Stop,
-                    ev => w.camera.input(&ev),
+                    ev => _camera.input(&ev),
                 },
                 _ => (),
             }
