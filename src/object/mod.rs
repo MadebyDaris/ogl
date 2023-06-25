@@ -1,6 +1,9 @@
-pub mod mesh_object; pub use mesh_object::*;
+pub mod mesh_object; use std::primitive;
+
+pub use mesh_object::*;
 
 use glium::{VertexBuffer};
+use gltf::{Document, mesh::util::tex_coords};
 use wfobj::*;
 use crate::utils::{matrix::ModelMat};
 
@@ -15,6 +18,39 @@ pub struct ShaderData {
     pub fragment_shader: String,
     pub tex_filename: String,
     pub transform_data: ModelMat
+}
+
+pub fn load_gltf(filename: &str) -> MeshData {
+    let (gltf, buffers, _) = gltf::import(filename).unwrap();
+    
+    let mut vertex_data: Vec<mesh_object::Vertex> = Vec::new();
+
+    let mut vert_pos: Vec<[f32;3]> =  vec![];
+    let mut vert_norm: Vec<[f32;3]> =  vec![];
+    let mut vert_tex: Vec<[f32;2]> =  vec![];
+
+    for mesh in gltf.meshes() {
+        for primitive in mesh.primitives() {
+            let reader = primitive.reader(|buffer| Some(&buffers[buffer.index()]));
+            if let Some(iter) = reader.read_positions() {
+                for vertex_position in iter {
+                    vert_pos.push(vertex_position)}}
+            if let Some(iter) = reader.read_normals() {
+                for vertex_normal in iter {
+                    vert_norm.push(vertex_normal)}}
+            if let Some(iter) = reader.read_tex_coords(0) {
+                for vertex_tex_coord in iter.into_f32() {
+                    vert_tex.push(vertex_tex_coord)}}
+        }
+    }
+
+    let mut vertex_data: Vec<Vertex> = Vec::new(); 
+    println!("{}", vert_tex.len());
+
+    for i in 0..(vert_pos.len()) {
+        vertex_data.push(Vertex { position: vert_pos[i], normal: vert_norm[i], tex_coords: vert_tex[i] });
+    }
+    return MeshData {verts: vertex_data}
 }
 
 pub fn load_obj_file(filename: &str) -> MeshData {

@@ -1,5 +1,5 @@
 use super::super::render::*;
-use crate::{object::{Mesh, MeshUniforms}};
+use crate::{object::mesh_object::{Mesh, MeshUniforms}};
 
 use glium::{Surface, uniform};
 pub struct World {

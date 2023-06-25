@@ -44,12 +44,12 @@ impl ModelMat {
         return self;
     }
     
-    pub fn scale(&mut self, kx: f32, ky: f32, kz:f32) -> ModelMat {
+    pub fn scale(mut self, kx: f32, ky: f32, kz:f32) -> ModelMat {
         let mut mat = self.matrix;
-        mat[0][0] *= kx;
-        mat[1][1] *= ky;
-        mat[2][2] *= kz;
-        return ModelMat{ matrix : mat };
+        self.matrix[0][0] = kx;
+        self.matrix[1][1] = ky;
+        self.matrix[2][2] = kz;
+        return self;
     }
 
     pub fn rotate(&mut self, rot_param: (f32, f32, f32)) ->  ModelMat {
