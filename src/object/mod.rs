@@ -20,7 +20,6 @@ pub fn load_gltf(filename: &str) -> MeshData {
     let mut vert_tex: Vec<[f32;2]> =  vec![];
     let mut indices: Vec<u32> =  vec![];
 
-
     for mesh in gltf.meshes() {
         for primitive in mesh.primitives() {
             let reader = primitive.reader(|buffer| Some(&buffers[buffer.index()]));
@@ -111,9 +110,5 @@ pub fn box_collision_object(mesh: &Vec<Vertex>, t: [f32; 3]) -> Bounding {
             collision.z.1 = i.position[2] + t[2]
         }
     }
-    // print!("x, {:?}", collision.x);
-    // print!("y, {:?}", collision.y);
-    // print!("z, {:?}", collision.z);
-
     return collision
 }
