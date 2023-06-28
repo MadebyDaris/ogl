@@ -16,6 +16,12 @@ implement_vertex!(Vertex, position, normal, tex_coords);
 pub struct MeshData {
     pub verts: Vec<Vertex> 
 }
+pub struct ShaderData {
+    pub vertex_shader: String,
+    pub fragment_shader: String,
+    pub tex_filename: String,
+}
+
 
 #[derive(Clone, Copy)]
 pub struct MeshUniforms {
@@ -27,15 +33,11 @@ pub struct MeshUniforms {
 pub struct Mesh { 
     pub vert_buffer: VertexBufferAny,
     pub program: Program,
-    pub mesh_transform: ModelMat,
     pub texture: SrgbTexture2d,
     pub translation_transform: [f32;3],
 }
 
 impl Mesh {
-    pub fn rendering_data(model_mat: ModelMat, vertex_shader: String, fragment_shader: String, tex_filename: String) -> ShaderData {
-        return ShaderData { transform_data: model_mat, vertex_shader, fragment_shader, tex_filename}
-    }
 
     // Using another function specified in "../mod.rs" we get the data from an obj this is to make the
     // process more broad 
@@ -48,7 +50,6 @@ impl Mesh {
             let mesh =  Mesh { 
                 vert_buffer, 
                 program: Mesh::compile_program(screen, &vertex_s, &fragment_s),
-                mesh_transform: shader_data.transform_data,
                 texture: tex, 
                 translation_transform: transform,
             };

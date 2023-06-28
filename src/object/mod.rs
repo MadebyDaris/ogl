@@ -12,13 +12,6 @@ pub struct Bounding {
     pub y: (f32, f32),
     pub z: (f32, f32)}
 
-pub struct ShaderData {
-    pub vertex_shader: String,
-    pub fragment_shader: String,
-    pub tex_filename: String,
-    pub transform_data: ModelMat
-}
-
 pub fn load_gltf(filename: &str) -> MeshData {
     let (gltf, buffers, _) = gltf::import(filename).unwrap();
     
@@ -91,31 +84,31 @@ pub fn load_obj_file(filename: &str) -> MeshData {
 }
 
 
-pub fn box_collision_object(mesh: &Vec<Vertex>) -> Bounding {
+pub fn box_collision_object(mesh: &Vec<Vertex>, t: [f32; 3]) -> Bounding {
     let mut collision = Bounding { x : (0.0,0.0), y : (0.0,0.0), z : (0.0,0.0) };
     for i in mesh {
     // X Axis
-        if i.position[0] < collision.x.0 {
-            collision.x.0 = i.position[0]
+        if i.position[0] + t[0] < collision.x.0 {
+            collision.x.0 = i.position[0] + t[0]
         }
-        if i.position[0] > collision.x.1 {
-            collision.x.1 = i.position[0]
+        if i.position[0] + t[0] > collision.x.1 {
+            collision.x.1 = i.position[0] + t[1]
         }
     
     // Y Axis
-        if i.position[1] < collision.y.0 {
-            collision.y.0 = i.position[1]
+        if i.position[1] + t[1] < collision.y.0 {
+            collision.y.0 = i.position[1] + t[1]
         }
-        if i.position[1] > collision.y.1 {
-            collision.y.1 = i.position[1]
+        if i.position[1] + t[1] > collision.y.1 {
+            collision.y.1 = i.position[1] + t[1]
         }
 
-    // X Axis
-        if i.position[2] < collision.z.0 {
-            collision.z.0 = i.position[2]
+    // Z Axis
+        if i.position[2] + t[2] < collision.z.0 {
+            collision.z.0 = i.position[2] + t[2]
         }
-        if i.position[2] > collision.z.1 {
-            collision.z.1 = i.position[2]
+        if i.position[2] + t[2] > collision.z.1 {
+            collision.z.1 = i.position[2] + t[2]
         }
     }
     // print!("x, {:?}", collision.x);

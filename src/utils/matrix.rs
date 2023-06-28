@@ -32,23 +32,20 @@ impl ModelMat {
         return z;
     }
 
-    pub fn translate(mut self, kx: f32, ky: f32, kz: f32) -> Self {
-        let mut mat = [0.;3];
-        mat[0] = kx;
-        mat[1] = ky;
-        mat[2] = kz;
-
-        self.matrix[0][3] = kx;
-        self.matrix[1][3] = ky;
-        self.matrix[2][3] = kz;
-        return self;
+    pub fn translate(mut self, kx: f32, ky: f32, kz: f32) -> ModelMat {
+        let mut mat = self.matrix;
+        mat[0][3] += kx;
+        mat[1][3] += ky;
+        mat[2][3] += kz;
+        return ModelMat{matrix: mat};
     }
     
     pub fn scale(mut self, kx: f32, ky: f32, kz:f32) -> ModelMat {
-        self.matrix[0][0] = kx;
-        self.matrix[1][1] = ky;
-        self.matrix[2][2] = kz;
-        return self;
+        let mut mat = self.matrix;
+        mat[0][0] = kx;
+        mat[1][1] = ky;
+        mat[2][2] = kz;
+        return ModelMat { matrix: mat };
     }
 
     pub fn rotate(&mut self, rot_param: (f32, f32, f32)) ->  ModelMat {
@@ -78,5 +75,14 @@ impl ModelMat {
         let f = ModelMat::mat_x_mat(ModelMat { matrix: x_y_rot.matrix }, ModelMat { matrix:z_rot } );
         let z = ModelMat::mat_x_mat( *self, f );
         return z
+    }
+
+    pub fn print_matrix(matrix: [[f32; 4]; 4]) {
+        for row in matrix.iter() {
+            for element in row.iter() {
+                print!("{} ", element);
+            }
+            println!();
+        }
     }
 }
