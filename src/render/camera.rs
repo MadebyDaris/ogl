@@ -16,7 +16,7 @@ pub struct Camera {
     direction: (f32, f32, f32),
     up: (f32,f32,f32),
 
-    m_position: (f32, f32, f32),
+    _m_position: (f32, f32, f32),
     yaw: f32,
     pitch:f32,
 
@@ -43,7 +43,7 @@ impl Camera {
             direction: (0.0, 0.0, 1.0),
             up: (0.0, 1.0, 0.0),
             
-            m_position: (m_position.0, m_position.1, 0.,),
+            _m_position: (m_position.0, m_position.1, 0.,),
             yaw: -pi/2.,
             pitch: 0.0,
 

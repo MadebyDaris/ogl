@@ -12,4 +12,4 @@ wfobj = {path = "../wfobj"}
 image = "*"
 noise = "*"
 rand = "*"
-gltf = "1.0"
+gltf = { version = "1.0", feature = "utils"}
