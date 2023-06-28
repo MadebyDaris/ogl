@@ -1,9 +1,8 @@
-pub mod mesh_object; use std::primitive;
+pub mod mesh_object;
 
 pub use mesh_object::*;
 
 use glium::{VertexBuffer};
-use gltf::{Document, mesh::util::tex_coords};
 use wfobj::*;
 use crate::utils::{matrix::ModelMat};
 
@@ -23,11 +22,11 @@ pub struct ShaderData {
 pub fn load_gltf(filename: &str) -> MeshData {
     let (gltf, buffers, _) = gltf::import(filename).unwrap();
     
-    let mut vertex_data: Vec<mesh_object::Vertex> = Vec::new();
-
     let mut vert_pos: Vec<[f32;3]> =  vec![];
     let mut vert_norm: Vec<[f32;3]> =  vec![];
     let mut vert_tex: Vec<[f32;2]> =  vec![];
+    let mut indices: Vec<u32> =  vec![];
+
 
     for mesh in gltf.meshes() {
         for primitive in mesh.primitives() {
@@ -41,13 +40,14 @@ pub fn load_gltf(filename: &str) -> MeshData {
             if let Some(iter) = reader.read_tex_coords(0) {
                 for vertex_tex_coord in iter.into_f32() {
                     vert_tex.push(vertex_tex_coord)}}
+            for vert_ind in reader.read_indices().unwrap().into_u32() {
+                indices.push(vert_ind);}
+            }       
         }
-    }
 
     let mut vertex_data: Vec<Vertex> = Vec::new(); 
-    println!("{}", vert_tex.len());
-
-    for i in 0..(vert_pos.len()) {
+    for i in indices {
+        let i: usize = i.try_into().unwrap();
         vertex_data.push(Vertex { position: vert_pos[i], normal: vert_norm[i], tex_coords: vert_tex[i] });
     }
     return MeshData {verts: vertex_data}
@@ -64,18 +64,20 @@ pub fn load_obj_file(filename: &str) -> MeshData {
             
                 // POSITION
                 for i in 0..2 { 
-                    let index_v = (vert[0] as usize) - 1; 
+                    let index_v: usize = (vert[0].saturating_sub(1)).try_into().unwrap();
                     x[i] = v[index_v][i]; 
                 }
                 let position = a4_2_a3(v[vert[0] as usize - 1]);
 
                 // NORMALS
-                let normal = n[(vert[2]) as usize - 1];
+                let index_n = vert[2].saturating_sub(1);
+                let normal = n[index_n as usize];
 
                 // TEXTURES
+                let index_tx = vert[1].saturating_sub(1); 
                 let mut tex_coords = [0.;2];
                 for i in 0..1 { 
-                    tex_coords[i] = t[(vert[1] as usize - 1)][i];
+                    tex_coords[i] = t[index_tx as usize][i];
                 }
 
                 vertex_data.push(Vertex {
