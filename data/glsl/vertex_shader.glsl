@@ -16,5 +16,5 @@ void main() {
     v_tex_coords = tex_coords;
     v_normal = transpose(inverse(mat3(mod_matrix))) * normal;
     f_pos = position + transform;
-    gl_Position = pers_mat * view_matrix * mod_matrix * vec4(f_pos, 1.0);
+    gl_Position = (pers_mat * view_matrix * mod_matrix) * vec4(f_pos, 1.0);
 }

@@ -25,6 +25,7 @@ impl World {
             },
             .. Default::default()
         };
+        
         for i in 0..self.children.len() {
             let mesh_object = &self.children[i];
             let mesh_uniform = object_render_data[i];
