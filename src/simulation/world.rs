@@ -1,5 +1,6 @@
+#[allow(dead_code)]
 use super::super::render::*;
-use crate::object::MeshObject;
+use crate::mesh::MeshObject;
 
 use glium::{index::PrimitiveType, uniform, IndexBuffer, Surface};
 #[derive(Clone, Copy)]
@@ -8,26 +9,32 @@ pub struct DiffuseLight {
     pub u_light_color: (f32, f32, f32),
 }
 
-pub struct World {
-    pub children: Vec<MeshObject>,
+pub trait World {
+    fn render(&mut self, screen: &glium::Display, cam: &CameraMat, u_light: DiffuseLight, background_color: (f32,f32,f32,f32));
+}
+
+#[allow(dead_code)]
+pub struct StationnaryWorld<'a> {
+    pub children: Vec<&'a MeshObject>,
     pub camera: Camera,
     pub u_light: DiffuseLight
 }
-impl World {
+impl<'a> StationnaryWorld<'a> {
     /// Creates a new World instance
     pub fn new(
-        children: Vec<MeshObject>,
+        children: Vec<&'a MeshObject>,
         camera: Camera, 
         u_light: DiffuseLight
     ) -> Self {
-        World { children, camera, u_light}
+        StationnaryWorld { children, camera, u_light}
     }
-
+}
+impl World for StationnaryWorld<'_> {
     /// Render the world with its objects, camera, and lighting
-    pub fn render(
+    fn render(
         &mut self, 
         screen: &glium::Display,  
-        cam: &camera::CameraMat,
+        cam: &CameraMat,
         u_light: DiffuseLight,
         background_color: (f32, f32, f32, f32)
     ){
@@ -52,7 +59,7 @@ impl World {
             ).expect("Failed to create index buffer");
 
             let uni = uniform!{
-                model: mesh_uniform.mod_matrix,  // Model matrix for object transformation
+                model: mesh_uniform.transform.matrix,  // Model matrix for object transformation
                 view: cam.view_mat,            // Camera's view matrix
                 perspective: cam.pers_mat,               // Camera's perspective matrix
                 u_light_direction: u_light.u_light_direction,                     // Light source position/intensity

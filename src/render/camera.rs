@@ -1,6 +1,7 @@
-use glium::{glutin::{self, event::{DeviceEvent}}, Display};
+use glium::{glutin::{self, event::DeviceEvent}, Display};
 use std::f32::consts::PI as pi;
-use crate::{utils::*};
+
+use crate::utils::*;
 #[derive(Clone, Copy)]
 pub struct CameraMat{ 
     pub view_mat: [[f32;4];4],
@@ -182,9 +183,9 @@ impl Camera {
         match key {
             glutin::event::VirtualKeyCode::Up => self.moving_up = pressed,
             glutin::event::VirtualKeyCode::Down => self.moving_down = pressed,
-            glutin::event::VirtualKeyCode::A => self.moving_left = pressed,
+            glutin::event::VirtualKeyCode::Q => self.moving_left = pressed,
             glutin::event::VirtualKeyCode::D => self.moving_right = pressed,
-            glutin::event::VirtualKeyCode::W => self.moving_forward = pressed,
+            glutin::event::VirtualKeyCode::Z => self.moving_forward = pressed,
             glutin::event::VirtualKeyCode::S => self.moving_backward = pressed,
             _ => (),
     

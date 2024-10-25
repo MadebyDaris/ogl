@@ -1,15 +1,18 @@
 use std::f32::consts::PI;
 
-use crate::utils::matrix::ModelMat;
-use super::{super::utils::app::*, world::DiffuseLight};
+use std::time::Instant;
+
+use crate::mesh::sphere::SphereConstructor;
+use crate::mesh::ShaderData;
+use super::{super::utils::app::*, world::*};
 use super::super::render::*;
-use crate::{game::world, object::*};
 use glium::glutin::{self, event::{self}, window::Fullscreen};
-use sphere::SphereConstructor;
 
 pub fn example() {
     // Initialize the basic app and camera settings
     let app = App::new();
+    let mut last_frame = Instant::now();
+
     app.screen.gl_window().window().set_cursor_visible(false);
     app.screen.gl_window().window().set_fullscreen(Some(Fullscreen::Borderless(None)));
     let mut _camera = Camera::new(&app.screen);
@@ -17,11 +20,6 @@ pub fn example() {
 
     // Create a diffuse light source with specified color and direction
     let light = DiffuseLight { u_light_color:(1.,0.1,0.2), u_light_direction:(1.,0.2, 1.)};
-
-    // Initialize model matrices for each object and apply translations to position them
-    let model_matrix1: ModelMat = ModelMat::identity();
-    let model_matrix2: ModelMat = ModelMat::identity().translate(4., 7., 0.);
-    let model_matrix3: ModelMat = ModelMat::identity().translate(5., 1., 0.);
     
     // Initialize a sphere constructor with radius, longitude, and latitude for sphere resolution
     let sphere_constructor = SphereConstructor {radius: 2., longitude:32, latitude: 16};
@@ -34,25 +32,34 @@ pub fn example() {
     };
     
     // Create Meshes for the spheres
-    let sphere_1 = sphere_constructor.sphere_object(&app.screen, model_matrix1.matrix, sphere_shaders.clone());
-    let sphere_2 = sphere_constructor.sphere_object(&app.screen, model_matrix2.matrix, sphere_shaders.clone());
-    let sphere_3 = sphere_constructor.sphere_object(&app.screen, model_matrix3.matrix, sphere_shaders.clone() );
-
-    // Add created meshes to a vector of objects and initialize the world with these objects, camera, and light
-    let children: Vec<MeshObject> = vec![sphere_1,sphere_2, sphere_3];
-    let mut w = world::World::new(children, _camera, light);
+    let mut sphere_1 = sphere_constructor.sphere_object(&app.screen, sphere_shaders.clone());
+    let mut sphere_2 = sphere_constructor.sphere_object(&app.screen, sphere_shaders.clone());
+    let mut sphere_3 = sphere_constructor.sphere_object(&app.screen, sphere_shaders.clone());
     
+    sphere_1.translate(0., 0., 0.);
+    sphere_2.translate(0., 0., 0.);
+    sphere_1.scale(0.1, 1., 0.1);
+    sphere_3.translate(2., 3., 0.);
 
 
 // 
 //  RENDERING LOOP
 //
     App::update(app.event_loop, move |events| {
+
+        let now = Instant::now();
+        let delta_time = now.duration_since(last_frame).as_secs_f32();
+        last_frame = now;
         // Get the current screen dimensions
         let (width,height) = app.screen.get_framebuffer_dimensions();
 
+        sphere_1.translate(0.1*delta_time, 0., 0.);
+
+
+        let mut w: StationnaryWorld<'_> = StationnaryWorld::new(vec![&sphere_1, &sphere_2, &sphere_3], _camera, light);
+        
         // Set up the camera matrices for view and perspective, with a 60-degree field of view (PI / 3.0)
-        let mut camera_mat = CameraMat{ 
+        let mut camera_mat: CameraMat = CameraMat{ 
                 view_mat: _camera.view_matrix(), 
                 pers_mat: _camera.get_perspective(
                     width as f32 / height as f32, 
@@ -61,9 +68,8 @@ pub fn example() {
                     0.1) 
         };
         _camera.update();
-        
         // Render the world with current settings
-        w.render(&app.screen, &camera_mat, light, (0.1,0.1,0.1,0.5));
+        w.render(&app.screen, &camera_mat, light, (0.01,0.01,0.01,1.));
     
         // Handle events
         let mut action = Action::Continue;

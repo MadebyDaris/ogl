@@ -1,5 +1,7 @@
 use glium::Display;
 
+use crate::utils::matrix::TransformMatrix;
+
 use super::{Mesh, MeshData, MeshObject, ShaderData, Vertex};
 
 pub struct SphereConstructor {
@@ -60,11 +62,11 @@ impl SphereConstructor {
         return (MeshData { verts: vertices}, indices);
     }
 
-    pub fn sphere_object(&self, screen: &Display, model_matrix:[[f32;4];4], shader_data: ShaderData) -> MeshObject{
+    pub fn sphere_object(&self, screen: &Display, shader_data: ShaderData) -> MeshObject{
         let (data, indices) = self.new();
         return MeshObject {
             data: Mesh::new(screen, &data.verts, shader_data),
-            uniforms: super::MeshUniforms { mod_matrix: model_matrix, indices },
+            uniforms: super::MeshUniforms { transform: TransformMatrix::identity(), indices },
         }
     }
 }

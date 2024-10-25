@@ -1,11 +1,12 @@
 extern crate glium;
 
-use crate::game::*;
+use crate::simulation::*;
 
-mod game;
+mod simulation;
 mod render;
 mod utils;
-pub mod object; 
+mod physics;
+pub mod mesh; 
 
 fn main() {
     example::example()

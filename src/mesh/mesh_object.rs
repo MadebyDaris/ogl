@@ -1,10 +1,10 @@
 use std::{fs::File, io::Read};
 use std::io::*;
-use glium::index::PrimitiveType;
 use glium::texture::SrgbTexture2d;
-use glium::{uniform, Frame, IndexBuffer, Surface};
 use glium::{implement_vertex, vertex::VertexBufferAny, Display, Program};
-use crate::object::*;
+
+use crate::mesh::*;
+use crate::utils::matrix::TransformMatrix;
 
 
 
@@ -29,66 +29,9 @@ pub struct ShaderData {
     pub tex_filename: String,
 }
 
-
-
-// 
-// Mesh Object
-// 
-pub struct MeshObject {
-    pub data: Mesh,
-    pub uniforms: MeshUniforms,
-}
-impl MeshObject {
-    // Create a new MeshObject, given data and uniforms
-    pub fn new(screen: &Display, object_data: &Vec<mesh_object::Vertex>, indices_raw:Vec<u32>, shader_data: ShaderData) -> MeshObject {
-        let vert_buffer = VertexBuffer::new(screen, object_data).unwrap().into();
-
-        let texture = Mesh::texture(screen, shader_data.tex_filename.as_str());
-
-        let program = Mesh::compile_program(screen, shader_data.vertex_shader.as_str(), shader_data.fragment_shader.as_str());
-
-        let data = Mesh {
-            vert_buffer,
-            texture,
-            program,
-        };
-
-        let uniforms = MeshUniforms {
-            mod_matrix: [[1.0; 4]; 4], // Identity matrix for default
-            indices: indices_raw,
-        };
-
-        MeshObject { data, uniforms }
-    }
-    // Render the mesh using the provided uniforms
-    pub fn render(&self, screen: &Display, target: &mut Frame, view: [[f32; 4]; 4], perspective: [[f32; 4]; 4]) {
-        let indices = IndexBuffer::new(screen, PrimitiveType::TriangleStripAdjacency, &self.uniforms.indices).unwrap();
-        // Set uniforms for rendering
-        let uniforms = uniform! {
-            model: self.uniforms.mod_matrix,
-            view: view,
-            perspective: perspective,
-            tex: &self.data.texture,
-        };
-        // Draw call
-        target
-            .draw(
-                &self.data.vert_buffer,
-                &indices,
-                &self.data.program,
-                &uniforms,
-                &Default::default(),
-            )
-            .unwrap();
-    }
-}
-
-
-
-
 #[derive(Clone)]
 pub struct MeshUniforms {
-    pub mod_matrix: [[f32;4];4],
+    pub transform: TransformMatrix,
     pub indices: Vec<u32>
 }
 pub struct Mesh { 

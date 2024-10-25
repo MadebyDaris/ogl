@@ -2,13 +2,77 @@ pub mod mesh_object;
 pub mod sphere;
 pub use mesh_object::*;
 
-use glium::VertexBuffer;
+use glium::{index::PrimitiveType, uniform, Display, Frame, IndexBuffer, Surface, VertexBuffer};
 use wfobj::*;
-#[derive(Clone, Copy)]
-pub struct Bounding {  
-    pub x: (f32, f32),
-    pub y: (f32, f32),
-    pub z: (f32, f32)}
+
+use crate::utils::matrix::TransformMatrix;
+
+
+
+// 
+// Mesh Object
+// 
+pub struct MeshObject {
+    pub data: Mesh,
+    pub uniforms: MeshUniforms,
+}
+impl MeshObject {
+    // Create a new MeshObject, given data and uniforms
+    pub fn new(screen: &Display, object_data: &Vec<mesh_object::Vertex>, indices_raw:Vec<u32>, shader_data: ShaderData) -> MeshObject {
+        let vert_buffer = VertexBuffer::new(screen, object_data).unwrap().into();
+
+        let texture = Mesh::texture(screen, shader_data.tex_filename.as_str());
+
+        let program = Mesh::compile_program(screen, shader_data.vertex_shader.as_str(), shader_data.fragment_shader.as_str());
+
+        let data = Mesh {
+            vert_buffer,
+            texture,
+            program,
+        };
+
+        let uniforms = MeshUniforms {
+            transform: TransformMatrix::identity(), // Identity matrix for default
+            indices: indices_raw,
+        };
+
+        MeshObject { data, uniforms }
+    }
+    // Render the mesh using the provided uniforms
+    pub fn render(&self, screen: &Display, target: &mut Frame, view: [[f32; 4]; 4], perspective: [[f32; 4]; 4]) {
+        let indices = IndexBuffer::new(screen, PrimitiveType::TriangleStripAdjacency, &self.uniforms.indices).unwrap();
+        // Set uniforms for rendering
+        let uniforms = uniform! {
+            model: self.uniforms.transform.matrix,
+            view: view,
+            perspective: perspective,
+            tex: &self.data.texture,
+        };
+        // Draw call
+        target
+            .draw(
+                &self.data.vert_buffer,
+                &indices,
+                &self.data.program,
+                &uniforms,
+                &Default::default(),
+            )
+            .unwrap();
+    }
+    pub fn translate(&mut self, kx:f32, ky:f32 ,kz:f32) {
+        self.uniforms.transform = self.uniforms.transform.translate(kx, ky, kz);
+    }
+    pub fn rotate(&mut self, kx:f32, ky:f32 ,kz:f32) {
+        self.uniforms.transform = self.uniforms.transform.rotate((kx, ky, kz));
+    }
+    pub fn scale(&mut self, kx:f32, ky:f32 ,kz:f32) {
+        self.uniforms.transform = self.uniforms.transform.scale(kx, ky, kz);
+    }
+}
+
+// 
+// Importing Models
+// 
 
 pub fn load_gltf(filename: &str) -> MeshData {
     let (gltf, buffers, _) = gltf::import(filename).unwrap();
@@ -78,35 +142,4 @@ pub fn load_obj_file(filename: &str) -> MeshData {
             }
         }
         return MeshData { verts: vertex_data};
-}
-
-
-pub fn box_collision_object(mesh: &Vec<Vertex>, t: [f32; 3]) -> Bounding {
-    let mut collision = Bounding { x : (0.0,0.0), y : (0.0,0.0), z : (0.0,0.0) };
-    for i in mesh {
-    // X Axis
-        if i.position[0] + t[0] < collision.x.0 {
-            collision.x.0 = i.position[0] + t[0]
-        }
-        if i.position[0] + t[0] > collision.x.1 {
-            collision.x.1 = i.position[0] + t[1]
-        }
-    
-    // Y Axis
-        if i.position[1] + t[1] < collision.y.0 {
-            collision.y.0 = i.position[1] + t[1]
-        }
-        if i.position[1] + t[1] > collision.y.1 {
-            collision.y.1 = i.position[1] + t[1]
-        }
-
-    // Z Axis
-        if i.position[2] + t[2] < collision.z.0 {
-            collision.z.0 = i.position[2] + t[2]
-        }
-        if i.position[2] + t[2] > collision.z.1 {
-            collision.z.1 = i.position[2] + t[2]
-        }
-    }
-    return collision
 }
