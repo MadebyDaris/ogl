@@ -1,32 +1,49 @@
-# Sandbox Expirement
-### Planet Generation
-# Sandbox Universe: Simple Physics Engine for Space Bodies
+# Opengl Expirement
+# Sphere Generation
 
+In order to create a sphere a structure known as the sphere constructor where you input the radius longitude, and position is given.
+- for each point in the sphere, at a specific longitude and latitude, we get two angles phi and theta, which will help us construct the sphere.
+- to change the location of the sphere, a transform matrix is used
+## Indices
+In 3D rendering with indexed primitives, the **primitive index type** used for a sphere depends on the range of vertices you’re indexing:
+1. **`u16` (16-bit unsigned integer)**: Use this type if you have fewer than 65,536 vertices. It’s common for lower-resolution spheres or less detailed meshes, as it saves memory and can be faster for the GPU to process.
+2. **`u32` (32-bit unsigned integer)**: Use this type if you have 65,536 vertices or more. Higher-resolution spheres or very detailed meshes generally require `u32` indices since `u16` wouldn’t cover the total vertex count.
+
+For spheres, the top and bottom vertices act as "singularities":
+- **Top Pole**: The northernmost vertex is shared by all segments of the first ring.
+- **Bottom Pole**: The southernmost vertex is shared by all segments of the last ring.
+The indexing system works because each `quad` has four vertices that logically represent a grid cell on the sphere's surface. Dividing this grid cell into two triangles allows OpenGL (or the rendering API) to rasterize them correctly, creating a smooth spherical appearance when enough latitude and longitude divisions are used.
+
+![quad](./quad.png)
+
+
+# Physics Engine for Space Bodies
+(Check previous commits an example was shown)
 This project is a **Rust**-based physics engine designed to simulate the gravitational interactions between celestial bodies. It allows users to explore basic physics principles, especially orbital mechanics, through an interactive sandbox environment.
 
-## Features
-
+## Future Features
 - **Planet Generation:** Create and simulate planetary bodies interacting through gravitational forces.
 - **Gravitational Physics:** Implements Newton's law of universal gravitation to calculate forces between space bodies.
 - **Orbit Simulation:** Uses the **Euler-Cromer** method for stable orbit calculations.
 - **Customizable Parameters:** Adjust variables like mass, velocity, and position to observe different outcomes.
 - **Visual Animation:** Real-time animation of planetary orbits based on user-defined parameters.
 
-## 1. Introduction to Gravitational Force
+# TODO:
+
+### 1. Introduction to Gravitational Force
 
 The simulation is based on Newton's law of gravitational force:
-
 $$ F = \frac{G \cdot m_1 \cdot m_2}{r^2} $$
 
 Where:
-- $ ( F )$ is the gravitational force between two bodies.
-- $ ( G )$ is the universal gravitational constant.
-- $ ( m_1 )$ and $( m_2 )$ are the masses of the two bodies.
-- $ ( r )$ is the distance between the bodies.
+- $(F)$ is the gravitational force between two bodies.
+- $(G)$ is the universal gravitational constant.
+- $(m_1)$ and $(m_2)$ are the masses of the two bodies.
+- $(r)$ is the distance between the bodies.
 
 This formula allows the engine to simulate interactions like planetary orbits, satellite paths, and more complex behaviors such as binary star systems.
 
-## 2. Euler-Cromer Method for Simulating Orbits
+### 2. Euler-Cromer Method for Simulating Orbits
 
 This method updates both position and velocity over time and ensures more accurate and stable orbit simulations compared to basic Euler methods. It works by recalculating the planet's position after each step, based on the force of gravity exerted by the central star or other planets.
 
@@ -52,12 +69,12 @@ The following parameters are customizable:
 - **Planet Position and Momentum**: Adjust initial conditions to generate different orbital behaviors.
 - **Time Step**: Fine-tune the precision of the simulation for more accurate results.
 
-## How to Use
+# How to Use
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd sandbox-universe
+   git clone https://github.com/MadebyDaris/ogl.git
+   cd ogl
    ```
 
 2. Build the project:
@@ -75,7 +92,6 @@ The following parameters are customizable:
 ## Dependencies
 
 - **glium**: For rendering the graphical output.
-- **nalgebra**: For vector and matrix math.
 - **image**: For handling textures and visualization.
 
 Install all dependencies using:
@@ -84,16 +100,6 @@ Install all dependencies using:
 cargo build
 ```
 
-## Future Improvements
-
-- **Collision Detection**: Adding functionality for planets or bodies to collide and merge.
-- **3D Visualization**: Expanding the current 2D orbit representation into a fully 3D environment.
-- **Additional Forces**: Adding support for other forces like radiation pressure or atmospheric drag.
-
-## License
-
-This project is licensed under the MIT License.
-
 ---
 
-Feel free to modify and extend the project to suit your sandbox universe needs
+Feel free to modify and extend the project to suit your needs

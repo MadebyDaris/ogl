@@ -13,4 +13,3 @@ image = "*"
 noise = "*"
 rand = "*"
 gltf = { version = "1.0", feature = "utils"}
-nalgebra = "0.33.1"

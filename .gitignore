@@ -1,2 +1,4 @@
 /target
 /ignore
+Cargo.lock
+workspace.code-workspace
