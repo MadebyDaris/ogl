@@ -1,2 +1,2 @@
-pub mod experiment;
+pub mod example;
 pub mod world;

@@ -10,7 +10,8 @@ pub enum Action {
 
 pub struct App {
     pub screen: glium::Display,
-    pub event_loop: EventLoop<()>
+    pub event_loop: EventLoop<()>,
+    // pub window: glutin::window::Window,
 }
 
 impl App {
@@ -19,7 +20,8 @@ impl App {
         let wb = glutin::window::WindowBuilder::new().with_resizable(true);
         let cb = glutin::ContextBuilder::new().with_vsync(true);
         let displ = glium::Display::new(wb, cb, &el).unwrap();
-        return App { screen : displ, event_loop: el }
+
+        return App { screen : displ, event_loop: el}
     }
 
     pub fn update<F>(event_loop: EventLoop<()>, mut callback: F) ->! where F: 'static + FnMut(&Vec<Event<'_, ()>>) -> Action {

@@ -1,20 +1,22 @@
-#version 140
+#version 330 core
 in vec3 position;
 in vec3 normal;
 in vec2 tex_coords;
 
-uniform vec3 transform;
-uniform mat4 pers_mat;
-uniform mat4 mod_matrix;
-uniform mat4 view_matrix;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 perspective;
+uniform vec3 u_light_direction;
 
 out vec3 v_normal;
 out vec2 v_tex_coords;
-out vec3 f_pos;
+out vec3 v_light_direction;
 
 void main() {
+    gl_Position = perspective * view * model * vec4(position, 1.0);
+    
     v_tex_coords = tex_coords;
-    v_normal = transpose(inverse(mat3(mod_matrix))) * normal;
-    f_pos = position + transform;
-    gl_Position = (pers_mat * view_matrix * mod_matrix) * vec4(f_pos, 1.0);
+
+    v_normal = mat3(transpose(inverse(model))) * normal;
+    v_light_direction = normalize(u_light_direction);
 }

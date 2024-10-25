@@ -1,11 +1,9 @@
 pub mod mesh_object;
-
+pub mod sphere;
 pub use mesh_object::*;
 
-use glium::{VertexBuffer};
+use glium::VertexBuffer;
 use wfobj::*;
-use crate::utils::{matrix::ModelMat};
-
 #[derive(Clone, Copy)]
 pub struct Bounding {  
     pub x: (f32, f32),

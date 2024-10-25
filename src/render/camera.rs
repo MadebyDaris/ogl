@@ -8,7 +8,7 @@ pub struct CameraMat{
 }
 #[derive(Clone, Copy)]
 pub struct Camera {
-    aspect_ratio: f32,
+    pub aspect_ratio: f32,
     translation_sensitivity: f32,
     rotation_sensitivity: f32,
 
@@ -58,12 +58,10 @@ impl Camera {
         }
     }
 
-    pub fn get_perspective(&mut self) -> [[f32;4];4] {
-        let fov: f32 = pi / 3.0;
-        let zfar = 1024.0;
-        let znear = 0.1;
+    pub fn get_perspective(&mut self, aspect:f32, fov:f32, zfar:f32, znear:f32) -> [[f32;4];4] {
         let f = 1.0 / (fov / 2.0).tan();
-        [
+        self.aspect_ratio = aspect;
+        return [
             [f / self.aspect_ratio  , 0.0 , 0.0 , 0.0],
             [ 0.0  ,  f  ,  0.0  ,  0.0],
             [ 0.0  , 0.0 , (zfar+znear)/(zfar-znear) ,     1.0],

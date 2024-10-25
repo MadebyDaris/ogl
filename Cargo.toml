@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 glium = "*"
 # wfobj = { git = "https://github.com/nidirene/wfobj.git" }
-wfobj = {path = "../wfobj"}
+wfobj = { git = "https://github.com/nidirene/wfobj.git" }
 image = "*"
 noise = "*"
 rand = "*"
 gltf = { version = "1.0", feature = "utils"}
+nalgebra = "0.33.1"
