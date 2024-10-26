@@ -1,14 +1,16 @@
-use crate::mesh::*;
+use glium::Display;
+use sphere::SphereConstructor;
 
-use super::{physicsworld::PhysicsWorld, position_euclidean, Vector};
+use crate::{mesh::*, utils::matrix::TransformMatrix};
+
+use super::{position_euclidean, Vector};
 
 pub struct AstralBody {
     pub mesh: MeshObject,
-    pub velocity: (f32, f32, f32),
-    pub acc: (f32, f32, f32),
+    pub velocity: Vector,
+    pub acc: Vector,
     pub mass: f32,
     pub r: f32,
-    pub universe: PhysicsWorld
 }
 impl PartialEq for AstralBody {
     fn eq(&self, other: &Self) -> bool {
@@ -32,10 +34,19 @@ impl AstralBody {
     pub fn universal_gravitation_force(&self, body: &mut AstralBody, g: f32) -> Vector {
         let direction = position_euclidean(&body.mesh) - position_euclidean(&self.mesh);
         let mu: f32 = g * body.mass * self.mass.clone();
-        let distance_squared = direction.0.powi(2) + direction.1.powi(2) + direction.2.powi(2);
-        if distance_squared == 0.0 {
+        let distance_squared = direction.magnitude().powi(2);
+        if direction.magnitude() == 0.0 {
             return Vector(0.0, 0.0, 0.0); // Avoid division by zero
         }
-        return (direction * mu)/distance_squared;
+        return ((direction.normalized() * mu) /distance_squared) * 1.
+    }
+}
+impl SphereConstructor {
+    pub fn sphere_physics_object(&self, velocity: Vector, mass: f32, screen: &Display, shader_data: ShaderData) -> AstralBody{
+        let (data, indices) = self.new();
+        let mesh = MeshObject {
+            data: Mesh::new(screen, &data.verts, shader_data),
+            uniforms: MeshUniforms { transform: TransformMatrix::identity(), indices },};
+        return AstralBody { mesh, velocity, acc: Vector(0.,0.,0.,), mass, r: self.radius};
     }
 }

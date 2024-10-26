@@ -9,6 +9,7 @@ pub struct DiffuseLight {
     pub u_light_color: (f32, f32, f32),
 }
 
+#[allow(dead_code)]
 pub trait World {
     fn render(&mut self, screen: &glium::Display, cam: &CameraMat, u_light: DiffuseLight, background_color: (f32,f32,f32,f32));
 }
@@ -19,6 +20,7 @@ pub struct StationnaryWorld<'a> {
     pub camera: Camera,
     pub u_light: DiffuseLight
 }
+#[allow(dead_code)]
 impl<'a> StationnaryWorld<'a> {
     /// Creates a new World instance
     pub fn new(
@@ -39,7 +41,7 @@ impl World for StationnaryWorld<'_> {
         background_color: (f32, f32, f32, f32)
     ){
         let mut target = screen.draw();
-        target.clear_color_and_depth(background_color, 1.0);
+        target.clear_color_and_depth(background_color, 1.);
         let params = glium::DrawParameters {
             depth: glium::Depth {
                 test: glium::DepthTest::IfLess,

@@ -1,22 +1,17 @@
-use super::{super::render::*, physicsobject};
-use crate::physics::physicsobject::*;
+use super::super::render::*;
+use crate::{physics::physicsobject::*, world::DiffuseLight};
 
 use glium::{index::PrimitiveType, uniform, IndexBuffer, Surface};
-#[derive(Clone, Copy)]
-pub struct DiffuseLight {
-    pub u_light_direction: (f32, f32, f32),
-    pub u_light_color: (f32, f32, f32),
-}
-
-pub struct PhysicsWorld {
-    pub children: Vec<AstralBody>,
+#[allow(dead_code)]
+pub struct PhysicsWorld<'a> {
+    pub children: Vec<&'a AstralBody>,
     pub camera: Camera,
     pub u_light: DiffuseLight
 }
-impl PhysicsWorld {
+impl<'a> PhysicsWorld<'a> {
     /// Creates a new World instance
     pub fn new(
-        children: Vec<AstralBody>,
+        children: Vec<&'a AstralBody>,
         camera: Camera, 
         u_light: DiffuseLight
     ) -> Self {

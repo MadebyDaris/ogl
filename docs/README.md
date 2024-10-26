@@ -30,6 +30,21 @@ This project is a **Rust**-based physics engine designed to simulate the gravita
 
 # TODO:
 
+# Physics
+To model an astral body, we inherit mesh data and add essential physical properties like acceleration, velocity, and mass. We calculate its motion by first applying Newton’s Second Law, ${F}=ma$, to determine acceleration as the result of the sum of forces acting on the body. Here, we incorporate Newton's law of universal gravitation for interactions between bodies, calculating gravitational force based on the formula $F = G \frac{m_1 m_2}{r^2}$​​.
+
+We write $µ = G{m_1 m_2}$ as its a constant, we are just missing r, which is the distance between the two bodies, one we have that, we can apply our force on our body.
+
+In OpenGL, we use transformation matrices to represent affine transformations within $\mathbb{R}^3$. These matrices act as linear maps adapted to the canonical basis of $\mathbb{R}^3$.
+
+But for the universal gravitational force, we need to distance vector between the two bodies, but all we have is the transformation matrices of the two matrices.
+
+To simulate the motion accurately:
+1. **Force Aggregation**: Compute all forces, including gravitational, applied, and resistive forces.
+2. **Integration Step**: Use numerical integration (e.g., Euler or Verlet) to update the velocity and position based on current acceleration.
+3. **Matrix Transformation**: Apply transformation matrices for position updates, ensuring that the simulation accurately reflects forces and resulting movement over discrete time steps.
+
+
 ### 1. Introduction to Gravitational Force
 
 The simulation is based on Newton's law of gravitational force:

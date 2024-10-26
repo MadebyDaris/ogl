@@ -4,9 +4,13 @@ use std::time::Instant;
 
 use crate::mesh::sphere::SphereConstructor;
 use crate::mesh::ShaderData;
+use crate::physics::physicsworld::PhysicsWorld;
+use crate::physics::Vector;
 use super::{super::utils::app::*, world::*};
 use super::super::render::*;
 use glium::glutin::{self, event::{self}, window::Fullscreen};
+
+const G: f32 = (5) as f32; 
 
 pub fn example() {
     // Initialize the basic app and camera settings
@@ -19,27 +23,29 @@ pub fn example() {
     _camera.update();
 
     // Create a diffuse light source with specified color and direction
-    let light = DiffuseLight { u_light_color:(1.,0.1,0.2), u_light_direction:(1.,0.2, 1.)};
+    let light = DiffuseLight { u_light_color:(1.,1.,1.), u_light_direction:(1.,0.2, 1.)};
     
     // Initialize a sphere constructor with radius, longitude, and latitude for sphere resolution
     let sphere_constructor = SphereConstructor {radius: 2., longitude:32, latitude: 16};
 
     // Set up shader data, specifying texture and shader file paths
     let sphere_shaders = ShaderData {
-        tex_filename: "./data/tex/tex1.jpg".to_string(),
+        tex_filename: "./data/tex/2k_mercury.jpg".to_string(),
         vertex_shader: "data/glsl/vertex_shader.glsl".to_string(),
         fragment_shader: "data/glsl/fragment_shader.glsl".to_string(),
     };
     
     // Create Meshes for the spheres
-    let mut sphere_1 = sphere_constructor.sphere_object(&app.screen, sphere_shaders.clone());
-    let mut sphere_2 = sphere_constructor.sphere_object(&app.screen, sphere_shaders.clone());
-    let mut sphere_3 = sphere_constructor.sphere_object(&app.screen, sphere_shaders.clone());
-    
-    sphere_1.translate(0., 0., 0.);
-    sphere_2.translate(0., 0., 0.);
-    sphere_1.scale(0.1, 1., 0.1);
-    sphere_3.translate(2., 3., 0.);
+    // Create AstralBody instances for the spheres
+    let mut body_1 = sphere_constructor.sphere_physics_object(Vector(0.0, 0., 0.), 210.0, &app.screen, sphere_shaders.clone());
+    body_1.mesh.translate(0., 0., 0.);
+    body_1.mesh.scale(2., 2., 2.);
+
+    let mut body_2 = sphere_constructor.sphere_physics_object(Vector(0., 0., 5.), 1.0, &app.screen, sphere_shaders.clone());
+    body_2.mesh.translate(35., 0., 0.);
+
+    let mut body_3 = sphere_constructor.sphere_physics_object(Vector(0., 0., 5.), 1.0, &app.screen, sphere_shaders.clone());
+    body_3.mesh.translate(60., 0., 0.);
 
 
 // 
@@ -47,17 +53,34 @@ pub fn example() {
 //
     App::update(app.event_loop, move |events| {
 
+// 
+// SIMULTAION LOGIC HERE
+// 
         let now = Instant::now();
         let delta_time = now.duration_since(last_frame).as_secs_f32();
         last_frame = now;
         // Get the current screen dimensions
         let (width,height) = app.screen.get_framebuffer_dimensions();
 
-        sphere_1.translate(0.1*delta_time, 0., 0.);
+        let force_1_2 = body_1.universal_gravitation_force(&mut body_2, G);
+        let force_1_3 = body_1.universal_gravitation_force(&mut body_3, G);
+        let force_2_1 = body_2.universal_gravitation_force(&mut body_1, G); // Equal and opposite
+        let force_2_3 = body_2.universal_gravitation_force(&mut body_3, G);
+        let force_3_1 = body_3.universal_gravitation_force(&mut body_1, G); // Equal and opposite
+        let force_3_2 = body_3.universal_gravitation_force(&mut body_2, G);
+
+            // Update velocities based on calculated forces
+        body_1.acc = (force_1_2 + force_1_3) / body_1.mass;
+        body_2.acc = (force_2_1 + force_2_3) / body_2.mass;
+        body_3.acc = (force_3_1 + force_3_2) / body_3.mass;
 
 
-        let mut w: StationnaryWorld<'_> = StationnaryWorld::new(vec![&sphere_1, &sphere_2, &sphere_3], _camera, light);
-        
+        // Update geometries for each body
+        for body in [&mut body_1, &mut body_2, &mut body_3] {
+            body.update_velocity(delta_time);
+            body.update_geometry(delta_time);
+        }
+
         // Set up the camera matrices for view and perspective, with a 60-degree field of view (PI / 3.0)
         let mut camera_mat: CameraMat = CameraMat{ 
                 view_mat: _camera.view_matrix(), 
@@ -68,10 +91,17 @@ pub fn example() {
                     0.1) 
         };
         _camera.update();
+
+// 
+// 
+// 
         // Render the world with current settings
-        w.render(&app.screen, &camera_mat, light, (0.01,0.01,0.01,1.));
+        let mut w: PhysicsWorld = PhysicsWorld::new(vec![&body_1, &body_2, &body_3], _camera, light);        
+        w.render(&app.screen, &camera_mat, light, (0.0,0.0,0.0,0.1));
     
-        // Handle events
+//
+// EVENT HANDLER
+// 
         let mut action = Action::Continue;
         for event in events {
             match event {

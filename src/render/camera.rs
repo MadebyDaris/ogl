@@ -37,8 +37,8 @@ impl Camera {
         
         Camera {
             aspect_ratio: 1024.0 / 768.0,
-            translation_sensitivity: 0.05,
-            rotation_sensitivity: 0.0025,
+            translation_sensitivity: 0.75,
+            rotation_sensitivity: 0.005,
 
             position: (0.1, 0.1, 1.1),
             direction: (0.0, 0.0, 1.0),
